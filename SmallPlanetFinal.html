@@ -1,0 +1,833 @@
+<html>
+  <head>
+    <title>small planet</title>
+    <script src="js/three.js"></script>
+    <script src="js/dat.gui.min.js"></script>
+    <script src="js/TrackballControls.js"></script>	
+    <script src="js/Detector.js"></script>
+    <script src="js/OrbitControls.js"></script>
+	<script src="js/THREEx.KeyboardState.js"></script>
+    
+    <style>
+      body { margin: 0; }
+      canvas { width: 100%; height: 100% }
+    </style>
+  </head>
+  <body>
+  	<div id="webgl"></div>
+    <script>
+		
+		
+		//small planet 
+		//Miyu Kimura & Niki Tran 
+		//css451 Final Project
+		
+      var scene, camera, renderer, planetMesh, clouds, controls, pivot;
+      var character;
+      var keyboard = new THREEx.KeyboardState();
+      var clock = new THREE.Clock();
+      var axis = new THREE.Vector3(0,0,0);
+
+      window.onload = function initialize()
+      {
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        renderer = new THREE.WebGLRenderer();
+        renderer.setClearColor(0x0f0f0f, 1);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild( renderer.domElement );
+
+        var webglEl = document.getElementById('webgl');
+
+		if (!Detector.webgl) {
+			Detector.addGetWebGLMessage(webglEl);
+			return;
+		}
+
+		scene.add(new THREE.AmbientLight(0x333333));
+
+		var light1 = new THREE.DirectionalLight(0xffffff, 1);
+		light1.position.set(10,-10, 5);
+		scene.add(light1);
+		
+		 var light = new THREE.AmbientLight( 0x404040 ); // soft white light
+		  scene.add( light );  
+		  
+		
+		addCharacter();
+		 
+		  //island
+		planetMesh	= createPlanet();
+		var starField = createStarfield();
+		clouds = createCloud();
+		  scene.add(clouds);
+		  
+		 land1 = createLand3();
+		  land1.position.set(18, 13, 8);
+         land2 = createLand();
+		  land2.position.set(8, 12, 20);
+			scene.add(land1);
+		  scene.add(land2);
+		  land3 = createLand2();
+		   land3.position.set(10, -14, 5);
+         land4 = createLand2();
+		  land4.position.set(-5, -15, -10);
+			scene.add(land3);
+		  scene.add(land4);
+		 land5 = createLand();
+		land5.position.set(0, -5, -25);
+        land6 = createLand2();
+			land6.position.set(0, 17, -3);
+			scene.add(land5);
+		  scene.add(land6);
+		  
+		  	 land7 = createLand3();
+		land7.position.set(0, 17, 13);
+        land8 = createLand2();
+			land8.position.set(0, 0, 16);
+			scene.add(land8);
+		  scene.add(land7);
+		  
+		  
+		//cloud 
+		cube = createCloud1();  
+		cube.position.set(-72, -70, -70);
+		cloud3 = createCloud1();  
+		cloud3.position.set(-75, -68, -75);
+		cloud4 = createCloud2();
+		cloud4.position.set(-80, -75, 78);  
+		  
+		cloud2 = createCloud2();
+		cloud2.position.set(78, 80, 78);
+		  
+		cube5 = createCloud1();
+		cube5.position.set(80, 80, 75);
+		cube6 = createCloud1();
+		  
+		cube6.position.set(78, 75, 80);
+		cube7 = createCloud1();
+		cube7.position.set(75, 80, 79);
+		   
+		cube4 = createCloud1();
+		cube4.position.set(3, 85, 105);
+		cloud6 = createCloud1();
+		cloud6.position.set(5, 83, 106);
+		  
+		  cube11= createCloud1();
+		cube11.position.set(12, -95, -83);
+		cloud11 = createCloud1();
+		cloud11.position.set(15, -90, -86);
+		  
+		cube14= createCloud1();
+		cube14.position.set(25, -115, -45);
+		cloud14 = createCloud1();
+		cloud14.position.set(20, -115, -45);
+		  
+		  
+		   cube12= createCloud1();
+		cube12.position.set(30, -75, 98);
+		cloud12 = createCloud1();
+		cloud12.position.set(30, -79, 92);
+		 	   
+		  cube13= createCloud1();
+		cube13.position.set(-25, -90, 90);
+		cloud13 = createCloud1();
+		cloud13.position.set(-31, -88, 90);
+		   cube15= createCloud1();
+		cube15.position.set(-32, -62, 100);
+		cloud15 = createCloud1();
+		cloud15.position.set(-35, -63, 100);
+		  
+		   cube16= createCloud1();
+		cube16.position.set(25, 120, 25);
+		cloud16 = createCloud1();
+		cloud16.position.set(25, 115, 28);
+		  
+		//tree  
+		tree2 = createCube2();
+		tree2.position.set(0, 108, 0);
+		post2 = createPost();  
+		post2.position.set(0, 101, 0);
+		post2.rotation.y= -0.5*Math.PI;
+		post2.rotation.z= 0.5*Math.PI;  
+		  
+		//trees
+		tree3 = createCube2();
+		tree3.position.set(0, 0, 108);
+		post3 = createPost();  
+		post3.position.set(0, 0, 102);
+		  
+		tree4 = createCube2();
+		tree4.position.set(0, 13, 107);
+		post4 = createPost();  
+		post4.position.set(0, 11, 101);  
+		  
+		tree5 = createCube2();
+		tree5.position.set(13, 13, 107);
+		post5 = createPost();  
+		post5.position.set(13, 11, 101);  
+		 		   
+		tree6 = createCube2();
+		tree6.position.set(21, 56, 91);
+		post6 = createPost();  
+		post6.position.set(21, 52, 87);
+		post6.rotation.x=0.2*Math.PI;
+		post6.rotation.y=-0.2*Math.PI;
+		post6.rotation.z=-0.1*Math.PI;  
+		 
+		tree7 = createCube2();
+		tree7.position.set(0, 0, -115);
+		post7 = createPost();  
+		post7.position.set(0, 0, -110);
+		  
+		tree8 = createCube2();
+		tree8.position.set(0, -12, -110);
+		post8 = createPost();  
+		post8.position.set(0, -10, -108);  
+		  
+		tree9 = createCube2();
+		tree9.position.set(-12, -12, -110);
+		post9 = createPost();  
+		post9.position.set(-12, -10, -105);  
+		
+		tree11 = createCube2();
+		tree11.position.set(3, -12, 105);
+		post11 = createPost();  
+		post11.position.set(3, -10, 100);  
+		  
+		tree12 = createCube2();
+		tree12.position.set(-10, -100, -43);  
+		post12 = createPost();  
+		post12.position.set(-10, -95, -38); 
+		post12.rotation.x=0.2*Math.PI;
+		post12.rotation.y=-0.2*Math.PI;
+		  
+		  	   
+		tree10 = createCube2();
+		tree10.position.set(-20, -55, -94);
+		post10 = createPost();  
+		post10.position.set(-20, -51, -90);
+		post10.rotation.x=0.2*Math.PI;
+		post10.rotation.y=-0.2*Math.PI;
+		post10.rotation.z=-0.1*Math.PI;   
+		  
+		//tree2
+		bigTree1 = createTree2();
+		bigTree1.position.set(62,66,62);
+		  bigTree1.rotation.x=0.5*Math.PI;
+		   bigTree1.rotation.y=0.3*Math.PI;
+		  bigTree1.rotation.z=-0.3*Math.PI;
+		  
+		  postBig1 = createPost();
+		  postBig1.position.set(58,62,58);
+		 postBig1.rotation.x=0.5*Math.PI;
+		postBig1.rotation.y=0.28*Math.PI;
+		 postBig1.rotation.z=-0.3*Math.PI;
+		  
+		  bigTree2 = createTree2();
+		  bigTree2.position.set(50,72,65);
+		 bigTree2.rotation.x=0.55*Math.PI;
+		   bigTree2.rotation.y=0.35*Math.PI;
+		  bigTree2.rotation.z=-0.32*Math.PI;
+		  
+		  postBig2 = createPost();
+		postBig2.position.set(47,68,61);
+		  postBig2.rotation.x=0.5*Math.PI;
+		postBig2.rotation.y=0.35*Math.PI;
+		 postBig2.rotation.z=-0.3*Math.PI;
+		  
+		  bigTree3 = createTree2();
+		  bigTree3.position.set(47,86,51);
+		 bigTree3.rotation.x=0.5*Math.PI;
+		   bigTree3.rotation.y=0.35*Math.PI;
+		  bigTree3.rotation.z=-0.35*Math.PI;
+		  
+		  postBig3 = createPost();
+		postBig3.position.set(44,81,48);
+		  postBig3.rotation.x=0.5*Math.PI;
+		postBig3.rotation.y=0.35*Math.PI;
+		 postBig3.rotation.z=-0.35*Math.PI;
+		  
+		bigTree4 = createTree2();
+		  bigTree4.position.set(84,51,51);
+		 bigTree4.rotation.x=0.45*Math.PI;
+		   bigTree4.rotation.y=0.18*Math.PI;
+		  bigTree4.rotation.z=-0.3*Math.PI;
+		  
+		  	  postBig4 = createPost();
+		postBig4.position.set(79,48,47);
+		  postBig4.rotation.x=0.45*Math.PI;
+		postBig4.rotation.y=0.18*Math.PI;
+		 postBig4.rotation.z=-0.3*Math.PI;
+		  
+		  bigTree5 = createTree2();
+		  bigTree5.position.set(75,59,54);
+		 bigTree5.rotation.x=0.45*Math.PI;
+		   bigTree5.rotation.y=0.25*Math.PI;
+		  bigTree5.rotation.z=-0.3*Math.PI;
+		  
+		  postBig5 = createPost();
+		postBig5.position.set(71,56,51);
+		  postBig5.rotation.x=0.45*Math.PI;
+		postBig5.rotation.y=0.25*Math.PI;
+		 postBig5.rotation.z=-0.3*Math.PI;
+		  
+		  
+		  //
+		  bigTree6 = createTree2();
+		  bigTree6.position.set(61,75,55);
+		 bigTree6.rotation.x=0.5*Math.PI;
+		   bigTree6.rotation.y=0.25*Math.PI;
+		  bigTree6.rotation.z=-0.3*Math.PI;
+		  
+		    postBig6 = createPost();
+		postBig6.position.set(57,71,52);
+		  postBig6.rotation.x=0.5*Math.PI;
+		postBig6.rotation.y=0.25*Math.PI;
+		 postBig6.rotation.z=-0.3*Math.PI;
+		 
+		  bigTree7 = createTree2();
+		  bigTree7.position.set(81,43,61);
+		 bigTree7.rotation.x=0.55*Math.PI;
+		   bigTree7.rotation.y=0.2*Math.PI;
+		  bigTree7.rotation.z=-0.3*Math.PI;
+		  
+		  	  postBig7 = createPost();
+		postBig7.position.set(77,41,57);
+		  postBig7.rotation.x=0.55*Math.PI;
+		postBig7.rotation.y=0.2*Math.PI;
+		 postBig7.rotation.z=-0.3*Math.PI;
+
+		  
+		  bigTree8 = createTree2();
+		  bigTree8.position.set(11,92,58);
+		 bigTree8.rotation.x=0.4*Math.PI;
+		   bigTree8.rotation.y=0.5*Math.PI;
+		  bigTree8.rotation.z=-0.2*Math.PI;
+		  
+		  postBig8 = createPost();
+		postBig8.position.set(10,87,53);
+		  postBig8.rotation.x=0.4*Math.PI;
+		postBig8.rotation.y=0.5*Math.PI;
+		 postBig8.rotation.z=-0.2*Math.PI;
+		  
+		   bigTree9 = createTree2();
+		  bigTree9.position.set(51,86,46);
+		 bigTree9.rotation.x=0.5*Math.PI;
+		   bigTree9.rotation.y=0.35*Math.PI;
+		  bigTree9.rotation.z=-0.35*Math.PI;
+		  
+		  postBig9 = createPost();
+		postBig9.position.set(48,81,43);
+		  postBig9.rotation.x=0.5*Math.PI;
+		postBig9.rotation.y=0.35*Math.PI;
+		 postBig9.rotation.z=-0.35*Math.PI;
+	
+		 //cherry trees 
+		cTree = createCTree();
+	    cTree.position.set(25, -104, 20);
+		cpost = createPost();  
+		cpost.position.set(24, -99, 19);
+		cpost.rotation.y= 0.5*Math.PI;
+		cpost.rotation.x= 0.4*Math.PI;  
+		  cpost.rotation.z= 0.6*Math.PI;
+		  
+		 // 
+		cTree2 = createCTree();
+	    cTree2.position.set(32, -78, 69);
+		cpost2 = createPost();  
+		cpost2.position.set(29, -75, 64);
+		cpost2.rotation.y= 0.6*Math.PI;
+		cpost2.rotation.x= 0.2*Math.PI;   
+		 cpost2.rotation.z= 0.6*Math.PI; 
+		  
+		  //
+		cTree3 = createCTree();
+	    cTree3.position.set(25, -88, 59);
+		cpost3 = createPost();  
+		cpost3.position.set(23, -84, 55);
+		cpost3.rotation.y= 0.55*Math.PI;
+		cpost3.rotation.z= 0.6*Math.PI; 
+		 cpost3.rotation.x= 0.2*Math.PI;  
+		//
+		 cTree8 = createCTree();
+	    cTree8.position.set(20, -98, 43);
+		cpost8 = createPost();  
+		cpost8.position.set(19, -93, 40);
+		cpost8.rotation.y= 0.55*Math.PI;
+		cpost8.rotation.z= 0.6*Math.PI;
+		cpost8.rotation.x= 0.2*Math.PI;  
+		  
+	  
+		  //
+		cTree4 = createCTree();
+	    cTree4.position.set(66, -88, -4);
+		cpost4 = createPost();  
+		cpost4.position.set(64, -83, -3);
+		
+		cpost4.rotation.z= 0.5*Math.PI;
+		cpost4.rotation.y= 0.75*Math.PI;   
+		
+		  //
+		  cTree5 = createCTree();
+	    cTree5.position.set(75, -80, 4);
+		cpost5 = createPost();  
+		cpost5.position.set(70, -75, 3);
+		cpost5.rotation.z= 0.5*Math.PI;
+		cpost5.rotation.y= 0.7*Math.PI; 
+		
+		//  
+		cTree6 = createCTree();
+	    cTree6.position.set(50, -70, 68);
+		cpost6 = createPost();  
+		cpost6.position.set(48, -66, 63);
+		cpost6.rotation.y= 0.7*Math.PI;
+		cpost6.rotation.z= 0.7*Math.PI; 
+		//cpost6.rotation.x= 0.2*Math.PI; 
+		  
+		  
+		  cTree7 = createCTree();
+	    cTree7.position.set(45, -100, 0);
+		cpost7 = createPost();  
+		cpost7.position.set(43, -96, 0);
+		cpost7.rotation.z= 0.5*Math.PI;
+		cpost7.rotation.y= 0.6*Math.PI;  
+		  cpost6.rotation.x= -0.1*Math.PI; 
+		  
+		  //
+		  cTree9 = createCTree();
+	    cTree9.position.set(75, -55, 5);
+		cpost9 = createPost();  
+		cpost9.position.set(73, -45, 0);
+		cpost9.rotation.y= 0.5*Math.PI;
+		cpost9.rotation.x= 0.5*Math.PI;  
+		  
+
+		//mountains 
+		mountain = createMountain2();
+		mountain.position.set(0, 75, 75);  
+		mountain.rotation.x=0.3*Math.PI;
+		  
+		 mountain.rotation.y=0.05*Math.PI;   
+		  
+		  
+		mountain2 = createMountain();
+		mountain2.position.set(72,72,5);
+		 mountain2.rotation.x= 0.2*Math.PI;
+		  mountain2.rotation.y= 0.2*Math.PI;
+		 mountain2.rotation.z=-0.3*Math.PI;
+		
+		mountain3 = createMountain2();
+		mountain3.position.set(26, 70,71);
+		  mountain3.rotation.x= 0.2*Math.PI;
+		  mountain3.rotation.y= -0.05*Math.PI;
+		  mountain3.rotation.z= -0.1*Math.PI;
+		
+		  mountain4 = createMountain2();
+		mountain4.position.set(-21, -83,-66);
+		  mountain4.rotation.x= -0.5*Math.PI;
+		  mountain4.rotation.y= -0.4*Math.PI;
+		  mountain4.rotation.z= 0.3*Math.PI;
+		  
+		  mountain5 = createMountain2();
+		mountain5.position.set(-26, -70,-71);
+		  mountain5.rotation.x= -0.5*Math.PI;
+		  mountain5.rotation.y= -0.4*Math.PI;
+		  mountain5.rotation.z= 0.3*Math.PI;
+		  
+		   mountain6 = createMountain3();
+		mountain6.position.set(-26, 70,-71);
+		  mountain6.rotation.x= 0.1*Math.PI;
+		  mountain6.rotation.y= -0.4*Math.PI;
+		  mountain6.rotation.z= 0.3*Math.PI;
+		  
+		  	mountain7 = createMountain3();
+		mountain7.position.set(71, -71,31);
+		   mountain7.rotation.x= 0.3*Math.PI;
+		  mountain7.rotation.y= 0.75*Math.PI;
+		  mountain7.rotation.z= 0.55*Math.PI;
+		  
+		  mountain8 = createMountain4();
+		mountain8.position.set(71, -71,42);
+	     mountain8.rotation.x= 0.3*Math.PI;
+		  mountain8.rotation.y= 0.7*Math.PI;
+		 mountain8.rotation.z= 0.5*Math.PI;
+		  
+		  mountain9 = createMountain5();
+		mountain9.position.set(61, -78,38);
+	     mountain9.rotation.x= 0.35*Math.PI;
+		  mountain9.rotation.y= 0.7*Math.PI;
+		 mountain9.rotation.z= 0.5*Math.PI;
+		  
+		  mountain10 = createMountain5();
+		mountain10.position.set(-21, 101,-17);
+	     mountain10.rotation.x= 0.5*Math.PI;
+		  mountain10.rotation.y= -0.45*Math.PI;
+		 mountain10.rotation.z= 0.55*Math.PI;
+		  
+		 
+		  //helpper 
+		 // var axisHelper = new THREE.AxisHelper( 500 );
+		  //scene.add( axisHelper );
+		  
+		  //cloud
+		scene.add(cube, cloud2, cube11, cloud11, cube12, cloud12, cube13, cube14, cloud13, cloud14, cube15, cube16, cloud15, cloud16);
+		 scene.add(cloud3, cloud6);
+		
+		  //tree
+		  scene.add(tree3, post3, tree2, post2);
+		  scene.add(tree4, post4, tree5, post5);
+		   scene.add(tree6, post6);
+		   scene.add(tree7, post7, post8, tree8, post9, tree9);
+		   scene.add(tree10, post10, tree11, post11, tree12, post12);	  
+		  scene.add(bigTree1,postBig1, bigTree2, postBig2);
+		  scene.add(bigTree3,postBig3, bigTree4,postBig4,bigTree5,postBig5);
+		  scene.add(bigTree6, postBig6, bigTree7, postBig7, bigTree8, postBig8, bigTree9, postBig9);
+		  //cherry tree
+		  scene.add(cTree,cpost, cTree2,cpost2, cTree3, cpost3, cTree4, cpost4, cTree5,cpost5, cTree6,cpost6,cTree7,cpost7, cTree8,cpost8);
+		  
+		  scene.add(cube4, cube5, cube6, cube7);
+		  scene.add(mountain,mountain2);
+		scene.add(mountain3,mountain4, mountain5, mountain7, mountain8, mountain10, mountain9);
+		  
+		  
+		//planet 
+		scene.add(planetMesh);
+		  
+		scene.add(starField);
+		scene.add(clouds);
+
+        camera.position.z = 200;
+
+		  //controls 
+        controls = controls = new THREE.OrbitControls( camera, renderer.domElement);
+		  controls.minDistance = 200;
+		  controls.maxDistance = 400;
+        webglEl.appendChild(renderer.domElement);
+		animate();
+     
+      }
+
+       addCharacter = function()
+      {
+      	THREE.ImageUtils.crossOrigin = '';
+      	var cubeGeometry = new THREE.SphereGeometry(4,3,8);
+        var cubeMaterial = new THREE.MeshLambertMaterial(
+        	{
+        		color: 0xBF5FFF,
+        		map	: THREE.ImageUtils.loadTexture('http://i305.photobucket.com/albums/nn216/tr002037/char_1.jpg'),
+
+        	});
+       
+		character = new THREE.Mesh(cubeGeometry, cubeMaterial);
+		
+        character.castShadow = true;
+		//scene.add( character );	
+
+		pivot = new THREE.Object3D();
+		pivot.add(character);
+
+		scene.add(pivot);
+		character.position.set(10, 0, 103);
+		character.rotation.x = .5*Math.PI;
+      }
+
+
+	  //cube 
+      createCloud1 = function()
+	  {
+		  	// create a cube
+        var cubeGeometry = new THREE.DodecahedronGeometry(5,0);
+        var cubeMaterial = new THREE.MeshLambertMaterial({color: 0xa4f4fa, transparent:true, opacity:0.8});
+       
+		  var cloud1 = new THREE.Mesh(cubeGeometry, cubeMaterial);
+		
+        cloud1.castShadow = true;
+        // position the cube
+        //cube.position.set(105, 0, 0)help;
+
+		 return cloud1
+	  }
+	  
+	   createCloud2 = function()
+	  {
+		  	// create a cube
+        var cubeGeometry = new THREE.DodecahedronGeometry(4,0);
+        var cubeMaterial = new THREE.MeshLambertMaterial({color: 0xa4f4fa, transparent:true, opacity:0.7});
+       
+		  var cloud2 = new THREE.Mesh(cubeGeometry, cubeMaterial);
+		
+        cube.castShadow = true;
+        // position the cube
+        //cube.position.set(105, 0, 0);
+
+		 return cloud2
+	  }
+	  
+	   
+	  createCube2 = function()
+	  {
+		  	// create a cube
+        var cubeGeometry2 = new THREE.DodecahedronGeometry(5,0);
+        var cubeMaterial2 = new THREE.MeshLambertMaterial({color: 0x14a40b});
+       
+		  var cube2 = new THREE.Mesh(cubeGeometry2, cubeMaterial2);
+		
+        cube2.castShadow = true;
+        // position the cube
+        
+
+		 return cube2
+	  }
+	  
+	  //cherry tree
+	  createCTree = function()
+	  {
+		  	// create a cube
+        var cubeGeometry2 = new THREE.DodecahedronGeometry(5,0);
+        var cubeMaterial2 = new THREE.MeshLambertMaterial({color: 0xfcaada});
+		  var cTree = new THREE.Mesh(cubeGeometry2, cubeMaterial2);
+        cTree.castShadow = true;
+       
+		 return cTree
+	  }
+	    
+	  createTree2 = function()
+	  {
+		  
+      		var geometry = new THREE.CylinderGeometry( 0.5, 3.5, 10, 10 );
+		  var material = new THREE.MeshLambertMaterial( {color: 0x0e590f} );
+		  var tree2 = new THREE.Mesh( geometry, material );
+		  tree2.castShadow = true;
+		 return tree2
+	  }
+	 
+	  //tree post
+	  createPost = function()
+	  {
+	
+		 var cylGeometry = new THREE.CylinderGeometry( 1, 1.5, 5, 35 );
+		 var cylMaterial = new THREE.MeshLambertMaterial({color: 0x501d07});
+		 var post = new THREE.Mesh( cylGeometry, cylMaterial );
+		 post.castShadow = true;
+		 post.rotation.x=0.5*Math.PI; 
+		 return post
+	  }
+	  
+	  createMountain = function()
+	  {
+		 //cylinder
+		 var cylGeometry = new THREE.CylinderGeometry( 2, 16, 8, 15 );
+		 var cylMaterial = new THREE.MeshLambertMaterial({color:0xc89d11 });
+		 var mountain = new THREE.Mesh( cylGeometry, cylMaterial );
+		 mountain.castShadow = true;
+		 
+		 return mountain
+	  }
+	  
+	  createMountain2 = function()
+	  {
+		 //cylinder
+		 var cylGeometry = new THREE.CylinderGeometry( 3, 25, 25, 20 );
+		 var cylMaterial = new THREE.MeshLambertMaterial({color: 0xc89d11});
+		 var mountain = new THREE.Mesh( cylGeometry, cylMaterial );
+		 mountain.castShadow = true;
+		
+		 return mountain
+	  }
+	  
+	  
+	    createMountain3 = function()
+	  {
+		 //cylinder
+		 var cylGeometry = new THREE.CylinderGeometry( 5, 20, 15, 12);
+		 var cylMaterial = new THREE.MeshLambertMaterial({color: 0x393320});
+		 var mountain = new THREE.Mesh( cylGeometry, cylMaterial );
+		 mountain.castShadow = true;
+		 
+		 return mountain
+	  }
+	 
+		   createMountain4 = function()
+	  {
+		 //cylinder
+		 var cylGeometry = new THREE.CylinderGeometry( 5, 20, 20, 15);
+		 var cylMaterial = new THREE.MeshLambertMaterial({color: 0x393320});
+		 var mountain = new THREE.Mesh( cylGeometry, cylMaterial );
+		 mountain.castShadow = true;
+		
+		 
+		 return mountain
+	  }
+	 
+	    createMountain5 = function()
+	  {
+		 //cylinder
+		 var cylGeometry = new THREE.CylinderGeometry( 5, 20, 15, 10);
+		 var cylMaterial = new THREE.MeshLambertMaterial({color: 0x393320});
+		 var mountain = new THREE.Mesh( cylGeometry, cylMaterial );
+		 mountain.castShadow = true;
+		 return mountain
+	  }
+		   	
+	   //island 
+	   createLand = function()
+	  {
+		  	// create a cube
+        var cubeGeometry = new THREE.DodecahedronGeometry(80,2);
+        var cubeMaterial = new THREE.MeshLambertMaterial({color: 0x608925});
+		 var land = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        land.castShadow = true;
+       
+		 return land
+	  }
+	    //island 
+	   createLand2 = function()
+	  {
+		  	// create a cube
+        var cubeGeometry = new THREE.DodecahedronGeometry(85,3);
+        var cubeMaterial = new THREE.MeshLambertMaterial({color: 0x608925});
+       
+		  var land2 = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        createLand2.castShadow = true;
+
+		 return land2
+	  }
+	   
+	      createLand3 = function()
+	  {
+		  	// create a cube
+        var cubeGeometry = new THREE.DodecahedronGeometry(80,3);
+        var cubeMaterial = new THREE.MeshLambertMaterial({color: 0x608925});
+       
+		  var land2 = new THREE.Mesh(cubeGeometry, cubeMaterial);
+		
+        createLand2.castShadow = true;
+
+		 return land2
+	  }		
+	  
+		  
+		//planet  
+     	createPlanet = function()
+     	{
+			var geometry	= new THREE.SphereGeometry(100, 150, 150)
+			THREE.ImageUtils.crossOrigin = '';
+			var material	= new THREE.MeshPhongMaterial({
+				
+				color:0x20b0b9
+				
+		  	})
+			var mesh	= new THREE.Mesh(geometry, material)
+			return mesh	
+
+
+		}  
+
+		//star 
+		 createStarfield	= function(){
+		 	 var starGeo = new THREE.SphereGeometry (600, 600, 600),
+        starMat = new THREE.MeshBasicMaterial();
+    	starMat.map = THREE.ImageUtils.loadTexture('http://i305.photobucket.com/albums/nn216/tr002037/galaxy_starfield.png');
+    	starMat.side = THREE.BackSide;
+                
+    	var starMesh = new THREE.Mesh(starGeo, starMat);
+
+			return starMesh	
+		}   
+
+		 //cloud
+		createCloud	= function(){
+			var geometry	= new THREE.SphereGeometry(120, 120, 120)
+			THREE.ImageUtils.crossOrigin = '';
+			var material	= new THREE.MeshPhongMaterial({
+				map		: THREE.ImageUtils.loadTexture('http://1.bp.blogspot.com/-puWLaF31coQ/Ukb49iL_BgI/AAAAAAAAK-k/mI7c24mkpj8/s1600/fair_clouds_8k.jpg'),
+
+				transparent	: true,
+				opacity		: 0.2,
+			})
+			var mesh	= new THREE.Mesh(geometry, material)
+			return mesh	
+		}   
+
+
+		function update()
+		{
+
+		//controls 
+			var delta = clock.getDelta(); // seconds.
+			var moveDistance = 200 * delta; // 200 pixels per second
+			var rotateAngle = Math.PI / 2 * delta;   // pi/2 radians (90 degrees) per second
+			var rad = Math.PI / 2 * delta;
+
+			// rotate left/right/up/down
+			var rotation_matrix = new THREE.Matrix4().identity();
+			if ( keyboard.pressed("A") )
+				character.rotateOnAxis( new THREE.Vector3(0,1,0), rotateAngle);
+			if ( keyboard.pressed("D") )
+				character.rotateOnAxis( new THREE.Vector3(0,1,0), -rotateAngle);
+			//if ( keyboard.pressed("R") )
+				//character.rotateOnAxis( new THREE.Vector3(1,0,0), rotateAngle);
+			//if ( keyboard.pressed("F") )
+				//character.rotateOnAxis( new THREE.Vector3(1,0,0), -rotateAngle);
+
+				// global coordinates
+			if ( keyboard.pressed("left") )
+			{//	character.position.x -= moveDistance;
+				pivot.rotation.z -= 0.005;
+			}
+			if ( keyboard.pressed("right") )
+			{//	character.position.x += moveDistance;
+				pivot.rotation.z += 0.005;
+			}
+			if ( keyboard.pressed("up") )
+			{	//character.position.z -= moveDistance;
+				//rad += 1;
+				//character.rotateOnAxis(axis, rad);
+				pivot.rotation.y += 0.005;
+			}
+		if ( keyboard.pressed("down") )
+		{
+			//character.position.z += moveDistance;
+			//rad -= 1; 
+			//character.rotateOnAxis(axis, rad);
+			pivot.rotation.x -= 0.005;
+		}
+
+
+		if ( keyboard.pressed("Z") )
+		{
+			character.position.set(10, 0, 103);
+			character.rotation.x = .5*Math.PI;
+		}
+
+		controls.update();
+		}
+
+
+		function animate() 
+		{
+		    requestAnimationFrame( animate );
+			render();		
+			update();
+		}
+
+      var render = function () {
+           renderer.render(scene, camera);
+        	
+	    clouds.rotation.y += 0.0004;
+  		cloud6.rotation.y += 0.005;
+		 cloud2.rotation.y += 0.005;
+		  cloud3.rotation.x += 0.005;
+		  cube.rotation.y += 0.005;
+		cube5.rotation.y += 0.005;
+		  cube6.rotation.y += 0.005;
+		  cube7.rotation.y += 0.005;
+		  
+      };    
+
+    </script>
+  </body>
+</html>
+
+			 				 			 			 
